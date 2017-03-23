@@ -14,7 +14,12 @@ for f in files:
     beta = float(f.split("/")[1].split("_")[1])
     mu = float(f.split("/")[1].split("_")[2][:-4])
     T = 1.0/beta
-    mag = float(subprocess.check_output(['tail', '-1', f])[:-1])
+
+    try:
+        mag = float(subprocess.check_output(['tail', '-1', f])[:-1])
+    except Exception:
+        mag = 0.0
+
     datapoints.append([beta,T,mu,mag])
 
 mu_vals = list(set([x[2] for x in datapoints]))

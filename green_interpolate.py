@@ -14,32 +14,37 @@ def iw(n,b):
 args = sys.argv
 file_name = args[1]
 output_file = args[2]
-old_beta = float(args[3])
-new_beta = float(args[4])
-
-print "infile: ", file_name, "out_file: ", output_file, "old_beta: ", old_beta, "new_beta: ", new_beta
+new_beta = float(args[3])
 
 Archive = HDFArchive(file_name, 'r')
 G_orig = Archive["dmft"]["G0_iw"]
 
-orig_data = G_orig['up'].data
+old_beta = G_orig['up'].mesh.beta
+
+print "infile: ", file_name, "out_file: ", output_file, "old_beta: ", old_beta, "new_beta: ", new_beta
+
+old_data = G_orig['up'].data
 first_ind = G_orig['up'].mesh.first_index()
 last_ind = G_orig['up'].mesh.last_index()
 
 old_mesh = np.array([iw(n,old_beta) for n in np.arange(first_ind,last_ind+1,1)])
 new_mesh = np.array([iw(n,new_beta) for n in np.arange(first_ind,last_ind+1,1)])
 
-orig_data = orig_data.reshape(512)
+old_data = old_data.reshape(old_data.shape[0])
+old_data_im = np.array([x.imag for x in old_data])
+old_data_re = np.array([x.real for x in old_data])
 
+if (new_beta > old_beta):
+    new_data_re = np.interp(new_mesh,old_mesh,old_data_re)
+    new_data_im = np.interp(new_mesh,old_mesh,old_data_im)
 
+    plt.plot(old_mesh, old_data_re, 'o')
+    plt.plot(old_mesh, old_data_im, 'o')
+    plt.plot(new_mesh, new_data_re, 'x')
+    plt.plot(new_mesh, new_data_im, 'x')
 
-# x = np.linspace(0, 2*np.pi, 10)
-# y = np.sin(x)
-# xvals = np.linspace(0, 2*np.pi, 50)
+    plt.show()
 
-# yinterp = np.interp(xvals, x, y)
-
-# plt.plot(x, y, 'o')
-# plt.plot(xvals, yinterp, '-x')
-
-plt.show()
+else :
+    print "Not implemented yet for smaller beta"
+    exit()
